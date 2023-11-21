@@ -46,12 +46,17 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  let newRandKey = generateRandomString();
+  let id = generateRandomString();
 
   console.log(req.body); // Log the POST request body to the console
 
-  urlDatabase[newRandKey] = `${req.body.longURL}`; // save key(randomly generated string) value(longURL) pair to urlDatabase
-  res.redirect(`/urls/${newRandKey}`);
+  urlDatabase[id] = `${req.body.longURL}`; // save key(randomly generated string) value(longURL) pair to urlDatabase
+  res.redirect(`/urls/${id}`);
+});
+
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id];
+  res.redirect(308,longURL);
 });
 
 app.listen(PORT, () => {
