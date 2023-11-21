@@ -6,7 +6,7 @@ app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
 
-const generateRandomString = function () {
+const generateRandomString = function() {
   let result = "";
   const characters = "ABCDEFHIJKLMNOPQRSTUVWXYSabcdefghijklmnopqrstuvwxyz1234567890";
   for (let i = 0; i < 6; i++) {
@@ -46,8 +46,12 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  let newRandKey = generateRandomString();
+
   console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+
+  urlDatabase[newRandKey] = `${req.body.longURL}`; // save key(randomly generated string) value(longURL) pair to urlDatabase
+  res.redirect(`/urls/${newRandKey}`);
 });
 
 app.listen(PORT, () => {
