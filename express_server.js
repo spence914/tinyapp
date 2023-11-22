@@ -50,20 +50,29 @@ app.post("/urls", (req, res) => {
 
   console.log(req.body); // Log the POST request body to the console
 
-  urlDatabase[id] = `${req.body.longURL}`; // save key(randomly generated string) value(longURL) pair to urlDatabase
+  urlDatabase[id] = req.body.longURL; // save key(randomly generated string) value(longURL) pair to urlDatabase
   res.redirect(`/urls/${id}`);
 });
 
 app.get("/u/:id", (req, res) => {
+  console.log(urlDatabase);
   const longURL = urlDatabase[req.params.id];
-  res.redirect(308,longURL);
+  res.redirect(longURL);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
   let id = req.params.id;
   delete urlDatabase[id];
-  res.redirect(/urls/);
+  res.redirect("/urls/");
 });
+
+app.post("/urls/:id/", (req, res) => {
+  let id = req.params.id;
+  urlDatabase[id] = req.body.newLongURL;
+  console.log(urlDatabase);
+  res.redirect("/urls/");
+});
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
