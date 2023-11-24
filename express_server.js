@@ -1,15 +1,28 @@
+/////////////////////////////////////////////////////////////////////////////////
+// Configuration
+/////////////////////////////////////////////////////////////////////////////////
+
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
-app.use(cookieParser());
-
-
 app.set("view engine", "ejs");
 
+
+/////////////////////////////////////////////////////////////////////////////////
+// Middleware
+/////////////////////////////////////////////////////////////////////////////////
+
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-const generateRandomString = function () {
+
+
+/////////////////////////////////////////////////////////////////////////////////
+// Helper functions
+/////////////////////////////////////////////////////////////////////////////////
+
+const generateRandomString = function() {
   let result = "";
   const characters = "ABCDEFHIJKLMNOPQRSTUVWXYSabcdefghijklmnopqrstuvwxyz1234567890";
   for (let i = 0; i < 6; i++) {
@@ -17,7 +30,7 @@ const generateRandomString = function () {
   } return result;
 };
 
-const getUserByEmail = function (email) {
+const getUserByEmail = function(email) {
   const userInfo = Object.values(users);
   const specificUser = userInfo.find(user => user.email === email);
 
@@ -25,6 +38,11 @@ const getUserByEmail = function (email) {
     return specificUser;
   } return null;
 };
+
+
+/////////////////////////////////////////////////////////////////////////////////
+// Databases
+/////////////////////////////////////////////////////////////////////////////////
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -44,6 +62,19 @@ const users = {
   },
 };
 
+/////////////////////////////////////////////////////////////////////////////////
+// Listener
+/////////////////////////////////////////////////////////////////////////////////
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
+});
+
+
+/////////////////////////////////////////////////////////////////////////////////
+// Routes
+/////////////////////////////////////////////////////////////////////////////////
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -59,7 +90,7 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies.user_id]
+    user: users[req.cookies.user_id] // Lookup user in users database object by user_id cookie
   };
   res.render("urls_index", templateVars);
 });
@@ -79,15 +110,11 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   let id = generateRandomString();
-
-  console.log(req.body); // Log the POST request body to the console
-
   urlDatabase[id] = req.body.longURL; // save key(randomly generated string) value(longURL) pair to urlDatabase
   res.redirect(`/urls/${id}`);
 });
 
-app.get("/u/:id", (req, res) => {
-  //console.log(urlDatabase);
+app.get("/u/:id", (req, res) => { // Takes user to desired website using shortened URL
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
@@ -101,18 +128,37 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id/", (req, res) => {
   let id = req.params.id;
   urlDatabase[id] = req.body.newLongURL;
-  //console.log(urlDatabase);
   res.redirect("/urls/");
 });
 
 app.post("/login/", (req, res) => {
-  res.cookie('username', `${req.body.username}`);
-  res.redirect("/urls/");
+  let submittedEmail = req.body.email;
+  let submittedPassword = req.body.password;
+
+  // If user tries to login with an email not in the database return 403 error
+  if (!getUserByEmail(submittedEmail)) {
+    return res.status(403).send({
+      Error: `Email: ${submittedEmail} not found`
+    });
+  }
+
+  // If user enters the wrong password return 403 error
+  if (getUserByEmail(submittedEmail) && getUserByEmail(submittedEmail).password !== submittedPassword) {
+    return res.status(403).send({
+      Error: `Password is incorrect`
+    });
+  }
+
+  // If correct email and password are submitted set user_id cookie to the id value from that users user object in database
+  if (getUserByEmail(submittedEmail) && getUserByEmail(submittedEmail).password === submittedPassword) {
+    res.cookie("user_id", getUserByEmail(submittedEmail).id);
+    res.redirect("/urls/");
+  }
 });
 
 app.post("/logout/", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect("/urls/");
+  res.redirect("/login/");
 });
 
 app.get("/register", (req, res) => {
@@ -127,18 +173,23 @@ app.post("/register", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
 
+
+  // If user submits either email or password field as blank return a 400 error
   if (email === "" || password === "") {
     return res.status(400).send({
       Error: 'Email and Password cannot be blank'
     });
   }
 
+  // If user tries to register with an email that is already in the database return a 400 error
   if (getUserByEmail(email)) {
     return res.status(400).send({
       Error: `Email: ${email} has already been registered`
     });
   } else
 
+
+  // Create new user object in users database keyed to the newly generated ID value, set user_id cookie to this value as well
     users[id] = {
       id,
       email,
@@ -150,7 +201,7 @@ app.post("/register", (req, res) => {
   res.redirect("/urls/");
 });
 
-app.get("/login", (req, res) => {
+app.get("/login/", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
@@ -158,6 +209,3 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars);
 });
 
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
