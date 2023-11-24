@@ -17,6 +17,15 @@ const generateRandomString = function () {
   } return result;
 };
 
+const getUserByEmail = function (email) {
+  const userInfo = Object.values(users);
+  const specificUser = userInfo.find(user => user.email === email);
+
+  if (specificUser) {
+    return specificUser;
+  } return null;
+};
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -102,7 +111,7 @@ app.post("/login/", (req, res) => {
 });
 
 app.post("/logout/", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls/");
 });
 
@@ -118,11 +127,23 @@ app.post("/register", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
 
-  users[id] = {
-    id,
-    email,
-    password
-  };
+  if (email === "" || password === "") {
+    return res.status(400).send({
+      Error: 'Email and Password cannot be blank'
+    });
+  }
+
+  if (getUserByEmail(email)) {
+    return res.status(400).send({
+      Error: `Email: ${email} has already been registered`
+    });
+  } else
+
+    users[id] = {
+      id,
+      email,
+      password
+    };
 
   res.cookie("user_id", id);
 
