@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 // Helper functions
 /////////////////////////////////////////////////////////////////////////////////
 
-const generateRandomString = function() {
+const generateRandomString = function () {
   let result = "";
   const characters = "ABCDEFHIJKLMNOPQRSTUVWXYSabcdefghijklmnopqrstuvwxyz1234567890";
   for (let i = 0; i < 6; i++) {
@@ -30,7 +30,7 @@ const generateRandomString = function() {
   } return result;
 };
 
-const getUserByEmail = function(email) {
+const getUserByEmail = function (email) {
   const userInfo = Object.values(users);
   const specificUser = userInfo.find(user => user.email === email);
 
@@ -162,7 +162,11 @@ app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
-  res.render("urls_register", templateVars);
+
+  if (req.cookies.user_id) {
+    res.redirect("/urls/");
+  } else
+    res.render("urls_register", templateVars);
 });
 
 app.post("/register", (req, res) => {
@@ -186,7 +190,7 @@ app.post("/register", (req, res) => {
   } else
 
 
-  // Create new user object in users database keyed to the newly generated ID value, set user_id cookie to this value as well
+    // Create new user object in users database keyed to the newly generated ID value, set user_id cookie to this value as well
     users[id] = {
       id,
       email,
@@ -203,6 +207,9 @@ app.get("/login/", (req, res) => {
     user: users[req.cookies.user_id]
   };
 
-  res.render("urls_login", templateVars);
+  if (req.cookies.user_id) {
+    res.redirect("/urls/");
+  } else
+    res.render("urls_login", templateVars);
 });
 
