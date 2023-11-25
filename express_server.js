@@ -157,13 +157,53 @@ app.get("/u/:id", (req, res) => { // Takes user to desired website using shorten
 
 app.post("/urls/:id/delete", (req, res) => {
   let id = req.params.id;
-  delete urlDatabase[id];
+  let currentUser = req.cookies.user_id;
+
+  if (!urlDatabase[id]) {
+    return res.status(404).send({
+      Error: "Cannot delete URL that is not in database"
+    });
+  }
+
+  if (urlDatabase[id] && currentUser === "") {
+    return res.status(403).send({
+      Error: "Must be logged in to edit URLs"
+    });
+  }
+
+  if (urlDatabase[id] && urlDatabase[id].userID !== currentUser) {
+    return res.status(403).send({
+      Error: "Cannot delete URL that does not belong to you"
+    });
+
+  } else if (urlDatabase[id].userID === currentUser)
+
+    delete urlDatabase[id];
   res.redirect("/urls/");
 });
 
 app.post("/urls/:id/", (req, res) => {
   let id = req.params.id;
-  urlDatabase[id].longURL = req.body.newLongURL;
+  let currentUser = req.cookies.user_id;
+
+  if (!urlDatabase[id]) {
+    return res.status(404).send({
+      Error: "Cannot edit URL that is not in database"
+    });
+  }
+
+  if (urlDatabase[id] && currentUser === "") {
+    return res.status(403).send({
+      Error: "Must be logged in to edit URLs"
+    });
+  }
+
+  if (urlDatabase[id] && urlDatabase[id].userID !== currentUser) {
+    return res.status(403).send({
+      Error: "Cannot edit URL that does not belong to you"
+    });
+  } else if (urlDatabase[id].userID === currentUser)
+    urlDatabase[id].longURL = req.body.newLongURL;
   res.redirect("/urls/");
 });
 
