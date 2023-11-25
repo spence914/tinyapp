@@ -39,6 +39,16 @@ const getUserByEmail = function (email) {
   } return null;
 };
 
+const urlsForUser = function (id) {
+  let usersURLS = {};
+
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      usersURLS[url] = urlDatabase[url];
+    }
+  } return usersURLS;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////////
 // Databases
@@ -51,7 +61,7 @@ const urlDatabase = {
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: 'spencer'
+    userID: "spencer"
   }
 };
 
@@ -91,8 +101,10 @@ app.get("/urls.json", (req, res) => {
 
 
 app.get("/urls", (req, res) => {
+  let usersURLs = urlsForUser(req.cookies.user_id);
+
   const templateVars = {
-    urls: urlDatabase,
+    urls: usersURLs,
     user: users[req.cookies.user_id] // Lookup user in users database object by user_id cookie
   };
   res.render("urls_index", templateVars);
@@ -111,7 +123,8 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: `${urlDatabase[req.params.id].longURL}`,
-    user: users[req.cookies.user_id]
+    user: users[req.cookies.user_id],
+    urlDatabase: urlDatabase // if (user.id !== urlDatabase[id].userID)
   };
   res.render("urls_show", templateVars);
 });
