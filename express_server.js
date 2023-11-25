@@ -123,7 +123,12 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:id", (req, res) => { // Takes user to desired website using shortened URL
   const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  if (!longURL) {
+    res.status(404).send({
+      Error: "This shortened URL does not exist"
+    });
+  } else
+    res.redirect(longURL);
 });
 
 app.post("/urls/:id/delete", (req, res) => {
