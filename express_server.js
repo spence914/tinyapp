@@ -94,7 +94,11 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.cookies.user_id] };
-  res.render("urls_new", templateVars);
+
+  if (!req.cookies.user_id) {
+    res.redirect("/login/");
+  } else
+    res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -106,6 +110,12 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  if (!req.cookies.user_id) {
+    return res.status(401).send({
+      Error: 'You must be logged in to shorten URLS'
+    });
+  }
+
   let id = generateRandomString();
   urlDatabase[id] = req.body.longURL; // save key(randomly generated string) value(longURL) pair to urlDatabase
   res.redirect(`/urls/${id}`);
