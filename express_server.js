@@ -116,6 +116,12 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let usersURLs = urlsForUser(req.session.user_id);
+  let visID = generateRandomString();
+
+  if (!req.session.visitorID) {
+    req.session.visitorID = visID;
+  }
+
 
   const templateVars = {
     urls: usersURLs,
@@ -181,7 +187,7 @@ app.get("/u/:id", (req, res) => { // Takes user to desired website using shorten
     const longURL = urlDatabase[id].longURL;
     urlDatabase[id].views = urlDatabase[id].views || {};
     urlDatabase[id].views.count = (urlDatabase[id].views.count || 0) + 1;
-    urlDatabase[id].views.uniques.push(req.session.user_id);
+    urlDatabase[id].views.uniques.push(req.session.visitorID);
     urlDatabase[id].views.times.push(new Date(Date.now()).toUTCString());
     res.redirect(longURL);
 
