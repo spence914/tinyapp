@@ -55,7 +55,7 @@ const urlDatabase = {
 const users = {
   spencer: {
     id: "spencer",
-    email: "spencer@spenny.net",
+    email: "spencer@spencer.org",
     password: bcrypt.hashSync("yirgacheffev60", 10),
   },
   user2RandomID: {
