@@ -7,6 +7,8 @@ const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
 app.set("view engine", "ejs");
+const bcrypt = require("bcryptjs");
+
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +71,7 @@ const users = {
   spencer: {
     id: "spencer",
     email: "spencer@spenny.net",
-    password: "yirgacheffev60",
+    password: bcrypt.hashSync("yirgacheffev60", 10),
   },
   user2RandomID: {
     id: "user2RandomID",
@@ -232,14 +234,14 @@ app.post("/login/", (req, res) => {
   }
 
   // If user enters the wrong password return 403 error
-  if (getUserByEmail(submittedEmail) && getUserByEmail(submittedEmail).password !== submittedPassword) {
+  if (getUserByEmail(submittedEmail) && !bcrypt.compareSync(submittedPassword, getUserByEmail(submittedEmail).password)) {
     return res.status(403).send({
       Error: `Password is incorrect`
     });
   }
 
   // If correct email and password are submitted set user_id cookie to the id value from that users user object in database
-  if (getUserByEmail(submittedEmail) && getUserByEmail(submittedEmail).password === submittedPassword) {
+  if (getUserByEmail(submittedEmail) && bcrypt.compareSync(submittedPassword, getUserByEmail(submittedEmail).password)) {
     res.cookie("user_id", getUserByEmail(submittedEmail).id);
     res.redirect("/urls/");
   }
@@ -262,9 +264,10 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  let id = generateRandomString();
-  let email = req.body.email;
-  let password = req.body.password;
+  const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
 
   // If user submits either email or password field as blank return a 400 error
@@ -286,7 +289,7 @@ app.post("/register", (req, res) => {
     users[id] = {
       id,
       email,
-      password
+      password: hashedPassword
     };
 
   res.cookie("user_id", id);
