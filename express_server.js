@@ -120,13 +120,22 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = {
-    id: req.params.id,
-    longURL: `${urlDatabase[req.params.id].longURL}`,
-    user: users[req.cookies.user_id],
-    urlDatabase: urlDatabase // if (user.id !== urlDatabase[id].userID)
-  };
-  res.render("urls_show", templateVars);
+  const id = req.params.id;
+  if (urlDatabase[id]) {
+
+    const templateVars = {
+      id: id,
+      longURL: `${urlDatabase[id].longURL}`,
+      user: users[req.cookies.user_id],
+      urlDatabase: urlDatabase
+    };
+
+    res.render("urls_show", templateVars);
+  } else {
+    return res.status(404).send({
+      Error: "This shortened URL does not exist"
+    });
+  }
 });
 
 app.post("/urls", (req, res) => {
@@ -146,13 +155,17 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => { // Takes user to desired website using shortened URL
-  const longURL = urlDatabase[req.params.id].longURL;
-  if (!longURL) {
-    res.status(404).send({
+  const id = req.params.id;
+
+  if (urlDatabase[id]) {
+    const longURL = urlDatabase[id].longURL;
+    res.redirect(longURL);
+
+  } else {
+    return res.status(404).send({
       Error: "This shortened URL does not exist"
     });
-  } else
-    res.redirect(longURL);
+  }
 });
 
 app.post("/urls/:id/delete", (req, res) => {
@@ -173,7 +186,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
   if (urlDatabase[id] && urlDatabase[id].userID !== currentUser) {
     return res.status(403).send({
-      Error: "Cannot delete URL that does not belong to you"
+      Error: "Cannot edit URL that does not belong to you"
     });
 
   } else if (urlDatabase[id].userID === currentUser)
