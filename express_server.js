@@ -59,6 +59,8 @@ const urlsForUser = function (id) {
 };
 
 
+
+
 /////////////////////////////////////////////////////////////////////////////////
 // Databases
 /////////////////////////////////////////////////////////////////////////////////
@@ -66,11 +68,14 @@ const urlsForUser = function (id) {
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
-    userID: "spencer"
+    userID: "spencer",
+    views: { "count": 0, "uniques": [], "times": [] }
+
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: "spencer"
+    userID: "spencer",
+    views: { "count": 0, "uniques": [], "times": [] }
   }
 };
 
@@ -130,13 +135,18 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
+  let uniques = urlDatabase[id].views.uniques;
+  let numofUniques = ([...new Set(uniques)].length || 0);
+  
   if (urlDatabase[id]) {
 
     const templateVars = {
       id: id,
       longURL: `${urlDatabase[id].longURL}`,
       user: users[req.session.user_id],
-      urlDatabase: urlDatabase
+      urlDatabase: urlDatabase,
+      views: (urlDatabase[id].views || {}).count,
+      numofUniques: numofUniques
     };
 
     res.render("urls_show", templateVars);
@@ -168,6 +178,10 @@ app.get("/u/:id", (req, res) => { // Takes user to desired website using shorten
 
   if (urlDatabase[id]) {
     const longURL = urlDatabase[id].longURL;
+    urlDatabase[id].views = urlDatabase[id].views || {};
+    urlDatabase[id].views.count = (urlDatabase[id].views.count || 0) + 1;
+    urlDatabase[id].views.uniques.push(req.session.user_id);
+    urlDatabase[id].views.times.push(new Date(Date.now()).toUTCString());
     res.redirect(longURL);
 
   } else {
