@@ -39,8 +39,8 @@ const generateRandomString = function () {
   } return result;
 };
 
-const getUserByEmail = function (email) {
-  const userInfo = Object.values(users);
+const getUserByEmail = function (email, database) {
+  const userInfo = Object.values(database);
   const specificUser = userInfo.find(user => user.email === email);
 
   if (specificUser) {
@@ -255,22 +255,22 @@ app.post("/login/", (req, res) => {
   let submittedPassword = req.body.password;
 
   // If user tries to login with an email not in the database return 403 error
-  if (!getUserByEmail(submittedEmail)) {
+  if (!getUserByEmail(submittedEmail, users)) {
     return res.status(403).send({
       Error: `Email: ${submittedEmail} not found`
     });
   }
 
   // If user enters the wrong password return 403 error
-  if (getUserByEmail(submittedEmail) && !bcrypt.compareSync(submittedPassword, getUserByEmail(submittedEmail).password)) {
+  if (getUserByEmail(submittedEmail, users) && !bcrypt.compareSync(submittedPassword, getUserByEmail(submittedEmail, users).password)) {
     return res.status(403).send({
       Error: `Password is incorrect`
     });
   }
 
   // If correct email and password are submitted set user_id cookie to the id value from that users user object in database
-  if (getUserByEmail(submittedEmail) && bcrypt.compareSync(submittedPassword, getUserByEmail(submittedEmail).password)) {
-    req.session.user_id = getUserByEmail(submittedEmail).id;
+  if (getUserByEmail(submittedEmail, users) && bcrypt.compareSync(submittedPassword, getUserByEmail(submittedEmail, users).password)) {
+    req.session.user_id = getUserByEmail(submittedEmail, users).id;
     res.redirect("/urls/");
   }
 });
@@ -307,7 +307,7 @@ app.post("/register", (req, res) => {
   }
 
   // If user tries to register with an email that is already in the database return a 400 error
-  if (getUserByEmail(email)) {
+  if (getUserByEmail(email, users)) {
     return res.status(400).send({
       Error: `Email: ${email} has already been registered`
     });
