@@ -9,6 +9,9 @@ const cookieSession = require('cookie-session');
 app.set("view engine", "ejs");
 const bcrypt = require("bcryptjs");
 
+const methodOverride = require('method-override');
+
+
 const {
   generateRandomString,
   getUserByEmail,
@@ -29,6 +32,7 @@ app.use(cookieSession({
 
 app.use(express.urlencoded({ extended: true }));
 
+app.use(methodOverride('_method'));
 
 
 
@@ -172,7 +176,7 @@ app.get("/u/:id", (req, res) => { // Takes user to desired website using shorten
   }
 });
 
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id/delete", (req, res) => {
   let id = req.params.id;
   let currentUser = req.session.user_id;
 
@@ -184,13 +188,13 @@ app.post("/urls/:id/delete", (req, res) => {
 
   if (urlDatabase[id] && currentUser === "") {
     return res.status(403).send({
-      Error: "Must be logged in to edit URLs"
+      Error: "Must be logged in to delete URLs"
     });
   }
 
   if (urlDatabase[id] && urlDatabase[id].userID !== currentUser) {
     return res.status(403).send({
-      Error: "Cannot edit URL that does not belong to you"
+      Error: "Cannot delete URL that does not belong to you"
     });
 
   } else if (urlDatabase[id].userID === currentUser)
@@ -199,7 +203,7 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls/");
 });
 
-app.post("/urls/:id/", (req, res) => {
+app.put("/urls/:id/", (req, res) => {
   let id = req.params.id;
   let currentUser = req.session.user_id;
 
