@@ -26,8 +26,26 @@
           <form method="POST" action="/urls/<%= id %>">
             <label>New URL:</label>
             <input name="newLongURL">
-            <button type="submit" class="btn btn-primary">Edit</button>
+            <button type="submit" class="btn btn-primary">Edit</button>     
           </form>
+          <p>This page has been viewed <%= (views || 0) %> times by <%= numofUniques %> unique visitors </p>
+          <h3>Visitors to this link</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">User ID</th>
+                <th scope="col">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for (let i = 0; i < urlDatabase[id].views.uniques.length; i++) { %>
+                <tr>
+                  <td><%= urlDatabase[id].views.uniques[i] %></td>
+                  <td><%= urlDatabase[id].views.times[i] %></td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
         </div>
         <div class="card-footer text-muted"></div>
       </div>
