@@ -168,7 +168,8 @@ app.post("/urls", (req, res) => {
 
   urlDatabase[id] = {
     longURL: req.body.longURL,
-    userID: req.session.user_id
+    userID: req.session.user_id,
+    views: {"count": 0, "uniques": [], "times": []}
   }; // save key(randomly generated string) value(longURL) pair to urlDatabase
   res.redirect(`/urls/${id}`);
 });
