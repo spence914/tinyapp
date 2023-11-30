@@ -250,14 +250,14 @@ app.post("/login/", (req, res) => {
   // If user tries to login with an email not in the database return 403 error
   if (!getUserByEmail(submittedEmail, users)) {
     return res.status(403).send({
-      Error: `Email: ${submittedEmail} not found`
+      Error: `EEmail or Password is incorrect`
     });
   }
 
   // If user enters the wrong password return 403 error
   if (getUserByEmail(submittedEmail, users) && !bcrypt.compareSync(submittedPassword, getUserByEmail(submittedEmail, users).password)) {
     return res.status(403).send({
-      Error: `Password is incorrect`
+      Error: `Email or Password is incorrect`
     });
   }
 
