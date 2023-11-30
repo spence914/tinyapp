@@ -98,7 +98,7 @@ app.get("/urls", (req, res) => {
   let visID = generateRandomString();
 
   if (!req.session.user_id) {
-    res.status(403).send({
+    return res.status(403).send({
       Error: "Must be logged in to view URLS"
     });
   } else
