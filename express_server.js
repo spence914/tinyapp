@@ -7,7 +7,9 @@ const app = express();
 const PORT = 8080; // default port 8080
 const cookieSession = require('cookie-session');
 app.set("view engine", "ejs");
+
 const bcrypt = require("bcryptjs");
+const salt = bcrypt.genSaltSync(10);
 
 const methodOverride = require('method-override');
 
@@ -60,12 +62,12 @@ const users = {
   spencer: {
     id: "spencer",
     email: "spencer@spencer.org",
-    password: bcrypt.hashSync("yirgacheffev60", 10),
+    password: bcrypt.hashSync("hunter2", salt),
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: bcrypt.hashSync("1234", salt),
   },
 };
 
@@ -254,8 +256,7 @@ app.post("/login/", (req, res) => {
 });
 
 app.post("/logout/", (req, res) => {
-  res.clearCookie('session');
-  res.clearCookie("session.sig");
+  req.session = null;
   res.redirect("/login/");
 });
 
@@ -274,7 +275,7 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const hashedPassword = bcrypt.hashSync(password, salt);
 
 
   // If user submits either email or password field as blank return a 400 error
