@@ -133,6 +133,10 @@ app.get("/urls/:id", (req, res) => {
     return res.status(403).send({
       Error: "You must be signed in to view URL information"
     });
+  } else if (!urlDatabase[id]) {
+    return res.status(404).send({
+      Error: "This shortened URL does not exist"
+    });
   } else if (urlDatabase[id].userID !== req.session.user_id) {
     return res.status(403).send({
       Error: "You can only view URL information you have created"
@@ -151,10 +155,6 @@ app.get("/urls/:id", (req, res) => {
     };
 
     res.render("urls_show", templateVars);
-  } else if (!urlDatabase[id]) {
-    return res.status(404).send({
-      Error: "This shortened URL does not exist"
-    });
   }
 });
 
