@@ -10,8 +10,6 @@
 
 <body>
   <%- include('partials/_header') %>
-    <% if (user && user.id === urlDatabase[id].userID) { %>
-
       <div class="card text-center">
         <div class="card-header"></div>
         <div class="card-body">
@@ -49,12 +47,6 @@
         </div>
         <div class="card-footer text-muted"></div>
       </div>
-      <% } else if (user && user.id !== urlDatabase[id].userID) { %>
-        <p>You can only view URLs that you have created</p>
-      <% } else { %>
-        <p>You must be logged in to view URL information</p>
-
-        <% } %>
 
           <!-- Bootstrap JS -->
           <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
