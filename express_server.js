@@ -97,9 +97,15 @@ app.get("/urls", (req, res) => {
   let usersURLs = urlsForUser(req.session.user_id, urlDatabase);
   let visID = generateRandomString();
 
-  if (!req.session.visitorID) {
-    req.session.visitorID = visID;
-  }
+  if (!req.session.user_id) {
+    res.status(403).send({
+      Error: "Must be logged in to view URLS"
+    });
+  } else
+
+    if (!req.session.visitorID) {
+      req.session.visitorID = visID;
+    }
 
 
   const templateVars = {
@@ -121,8 +127,15 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const id = req.params.id;
 
-  
-  if (urlDatabase[id]) {
+  if (!req.session.user_id) {
+    return res.status(403).send({
+      Error: "You must be signed in to view URL information"
+    });
+  } else if (urlDatabase[id].userID !== req.session.user_id) {
+    return res.status(403).send({
+      Error: "You can only view URL information you have created"
+    });
+  } else if (urlDatabase[id]) {
     let uniques = urlDatabase[id].views.uniques;
     let numofUniques = ([...new Set(uniques)].length || 0);
 
@@ -136,7 +149,7 @@ app.get("/urls/:id", (req, res) => {
     };
 
     res.render("urls_show", templateVars);
-  } else {
+  } else if (!urlDatabase[id]) {
     return res.status(404).send({
       Error: "This shortened URL does not exist"
     });
@@ -155,7 +168,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[id] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
-    views: {"count": 0, "uniques": [], "times": []}
+    views: { "count": 0, "uniques": [], "times": [] }
   }; // save key(randomly generated string) value(longURL) pair to urlDatabase
   res.redirect(`/urls/${id}`);
 });
